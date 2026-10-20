@@ -3,9 +3,6 @@
 
 https://github.com/user-attachments/assets/349010c7-3192-4fb0-bc18-6ccb39f82cb2
 
-
-![Opportunity Details tab and Agreement tab side by side](docs/screenshots/side-by-side.png)
-
 An Opportunity-driven **tenancy agreement document** for an Australian property-management agency, where the document and the Opportunity are two views of the same data:
 
 - Edit the Opportunity (Details tab, list view, Flow, API, another user) and the document updates live.
