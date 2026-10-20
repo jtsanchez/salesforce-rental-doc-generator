@@ -1,10 +1,18 @@
 # AU Rental Document Generator (Salesforce)
 
+![Opportunity Details tab and Agreement tab side by side](docs/screenshots/side-by-side.png)
+
 An Opportunity-driven **tenancy agreement document** for an Australian property-management agency, where the document and the Opportunity are two views of the same data:
 
 - Edit the Opportunity (Details tab, list view, Flow, API, another user) and the document updates live.
 - Edit the document and press **Save to Opportunity** and the Opportunity record is updated.
 - **Generate PDF** saves a dated snapshot to the Opportunity's Files, which is the copy you send out for signature.
+
+**Built with:** Lightning Web Components, Lightning Data Service, Change Data Capture (`lightning/empApi`), Apex (user-mode security, tests), Visualforce PDF rendering, validation rules, formula fields, permission sets, Salesforce DX.
+
+| Agreement document | Generated PDF |
+|---|---|
+| ![Agreement document](docs/screenshots/document.png) | ![Generated PDF](docs/screenshots/pdf.png) |
 
 Industry: residential rentals in Australia. Opportunity = one prospective tenancy; Account = the landlord; Opportunity owner = the managing agent.
 
@@ -39,13 +47,21 @@ force-app/main/default/
 scripts/apex/seed-data.apex              5 sample tenancies across NSW, VIC, QLD, WA
 optional/layouts/                        page layout that shows the new fields on the Details tab
 config/project-scratch-def.json          scratch org definition (AU country, Developer edition)
+docs/screenshots/                        images used in this README
 ```
 
 ---
 
 ## Set up a demo org
 
-You need the [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`sf`) and VS Code is optional. Pick **Option A** (scratch org, cleanest) or **Option B** (free Developer Edition).
+You need the [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`sf`). VS Code is optional but handy. Pick **Option A** (scratch org, cleanest) or **Option B** (free Developer Edition).
+
+### First: get the project onto your computer (both options)
+
+1. Get the code. Either clone it (`git clone <this repo's URL>`) or use **Code > Download ZIP** on the GitHub page and unzip it.
+2. In VS Code: **File > Open Folder...** and choose the project folder: the one that directly contains `sfdx-project.json`. If you downloaded a ZIP, the project can end up one folder deeper than you expect, so check for `sfdx-project.json` before continuing.
+3. Open the built-in terminal: **Terminal > New Terminal**. It opens already inside the project folder. Every command below is run here.
+4. Check the CLI works: `sf --version`. You should see a version number. If you get "command not found", close and reopen VS Code, then try again.
 
 ### Option A: scratch org
 
@@ -60,11 +76,18 @@ sf org create scratch --definition-file config/project-scratch-def.json --alias 
 
 1. Sign up at <https://developer.salesforce.com/signup> and verify the email.
 2. Setup > Company Settings > Company Information: check **Default Currency** is Australian Dollar (change it if not) and set your time zone in your personal settings.
-3. Log the CLI in:
+3. Log the CLI in to your new org. In the VS Code terminal (opened in the project folder, see above) run:
 
-```bash
-sf org login web --set-default --alias rental-demo
-```
+   ```bash
+   sf org login web --set-default --alias rental-demo
+   ```
+
+   - Your browser opens a Salesforce login page. Sign in with your **Developer Edition username** (it looks like an email address but is the one you were given at sign-up) and the password you set from the verification email. Your normal email address will not work unless it is also the username.
+   - Click **Allow** on the "Salesforce CLI wants to access your account" screen.
+   - Go back to the terminal. It prints "Successfully authorized ... with org ID ...".
+   - Confirm it worked: `sf org list`. You should see `rental-demo` with a `(U)` marker, meaning it is the default org.
+
+   You do not create a scratch org in Option B. Go straight to the next section.
 
 ### Deploy, assign access, load data (both options)
 
@@ -179,6 +202,7 @@ Standard fields also editable from the document: Stage and Close Date.
 
 | Symptom | Fix |
 |---|---|
+| `InvalidProjectWorkspaceError` ("does not contain a valid Salesforce DX project") | Your terminal is not in the folder that contains `sfdx-project.json`. Open that folder in VS Code (often one level deeper after unzipping). |
 | Component not in the App Builder list | Confirm `sf project deploy start` succeeded, then reload App Builder. |
 | Fields blank or "insufficient access" | Assign the permission set: `sf org assign permset --name Rental_Agreement_Demo`. |
 | Edits from another window don't appear live | Check Change Data Capture has **Opportunity** selected. Same-window edits sync regardless. |
@@ -192,7 +216,7 @@ Standard fields also editable from the document: Stage and Close Date.
 - The PDF cannot be edited back into Salesforce. A signed copy would be uploaded to Files or sent through an e-signature tool.
 - The bond cap is VIC only and illustrative. It follows [Consumer Affairs Victoria's guidance](https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-payments-and-amounts): a bond generally can't exceed one month's rent unless weekly rent is over $900 or VCAT sets a higher amount. The rule treats one month as weekly rent x 52 / 12, because the guidance doesn't spell out the calculation, and it ignores VCAT orders and rooming houses. Add rules for other states after checking current legislation.
 
-## Ideas to extend it (good portfolio talking points)
+## Ideas to extend it
 
 - Auto-save on field blur instead of the Save button.
 - Tenants as Contacts via Opportunity Contact Roles, with a multi-tenant signature block.
