@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pets_Allowed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Whether pets are permitted (with the landlord's consent).</description>
+    <externalId>false</externalId>
+    <label>Pets Allowed</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

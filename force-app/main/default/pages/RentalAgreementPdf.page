@@ -1,0 +1,137 @@
+<apex:page standardController="Opportunity" renderAs="pdf" applyHtmlTag="false" showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+<html>
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 16mm 20mm 16mm;
+            @bottom-center {
+                content: "Demo document - page " counter(page) " of " counter(pages);
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 8pt;
+                color: #666666;
+            }
+        }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #1a1a1a; line-height: 1.4; }
+        .agency { font-size: 9pt; letter-spacing: 1px; text-transform: uppercase; color: #555555; }
+        h1 { font-size: 20pt; margin: 4px 0 2px 0; color: #0b2a4a; }
+        .ref { font-size: 9pt; color: #555555; margin-bottom: 14px; border-bottom: 2px solid #0b2a4a; padding-bottom: 8px; }
+        h2 { font-size: 11.5pt; margin: 18px 0 6px 0; color: #0b2a4a; border-bottom: 1px solid #cccccc; padding-bottom: 3px; }
+        table.grid { width: 100%; border-collapse: collapse; }
+        table.grid td { padding: 4px 6px; vertical-align: top; border-bottom: 1px solid #eeeeee; }
+        td.label { width: 32%; color: #555555; }
+        td.value { width: 68%; font-weight: bold; }
+        .clause { margin: 6px 0 8px 0; }
+        .conditions { border: 1px solid #cccccc; padding: 8px; min-height: 40px; white-space: pre-wrap; }
+        table.sign { width: 100%; margin-top: 36px; border-collapse: collapse; }
+        table.sign td { width: 50%; padding-right: 24px; vertical-align: bottom; }
+        .sigline { border-bottom: 1px solid #000000; height: 34px; }
+        .siglabel { font-size: 8.5pt; color: #555555; padding-top: 3px; }
+        .disclaimer { margin-top: 24px; font-size: 8pt; color: #777777; border-top: 1px solid #cccccc; padding-top: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="agency">Harbourside Property Management (Demo)</div>
+    <h1>Residential Tenancy Agreement</h1>
+    <div class="ref">
+        Reference: {!Opportunity.Name} &#160;|&#160; Status: {!Opportunity.StageName} &#160;|&#160; Generated:
+        <apex:outputText value="{0,date,d MMMM yyyy h:mm a}">
+            <apex:param value="{!NOW()}" />
+        </apex:outputText>
+    </div>
+
+    <h2>1. Parties</h2>
+    <table class="grid">
+        <tr><td class="label">Landlord</td><td class="value">{!Opportunity.Account.Name}</td></tr>
+        <tr><td class="label">Managing agent</td><td class="value">{!Opportunity.Owner.Name}</td></tr>
+        <tr><td class="label">Tenant</td><td class="value">{!IF(ISBLANK(Opportunity.Tenant_Name__c), '______________________', Opportunity.Tenant_Name__c)}</td></tr>
+        <tr><td class="label">Tenant email</td><td class="value">{!Opportunity.Tenant_Email__c}</td></tr>
+        <tr><td class="label">Tenant phone</td><td class="value">{!Opportunity.Tenant_Phone__c}</td></tr>
+    </table>
+
+    <h2>2. The premises</h2>
+    <div class="clause">
+        The Landlord lets to the Tenant the residential premises at
+        <b>{!Opportunity.Property_Address__c}, {!Opportunity.Property_Suburb__c} {!Opportunity.Property_State__c} {!Opportunity.Property_Postcode__c}</b>.
+    </div>
+    <table class="grid">
+        <tr><td class="label">Property type</td><td class="value">{!Opportunity.Property_Type__c}</td></tr>
+        <tr><td class="label">Bedrooms</td><td class="value">{!Opportunity.Bedrooms__c}</td></tr>
+        <tr><td class="label">Bathrooms</td><td class="value">{!Opportunity.Bathrooms__c}</td></tr>
+        <tr>
+            <td class="label">Pets</td>
+            <td class="value">{!IF(Opportunity.Pets_Allowed__c, "Permitted with the Landlord's written consent", 'Not permitted')}</td>
+        </tr>
+    </table>
+
+    <h2>3. Term</h2>
+    <table class="grid">
+        <tr>
+            <td class="label">Commencement date</td>
+            <td class="value">
+                <apex:outputText value="{0,date,d MMMM yyyy}"><apex:param value="{!Opportunity.Lease_Start_Date__c}" /></apex:outputText>
+            </td>
+        </tr>
+        <tr><td class="label">Fixed term</td><td class="value">{!Opportunity.Lease_Term_Months__c} months</td></tr>
+        <tr>
+            <td class="label">End date</td>
+            <td class="value">
+                <apex:outputText value="{0,date,d MMMM yyyy}"><apex:param value="{!Opportunity.Lease_End_Date__c}" /></apex:outputText>
+            </td>
+        </tr>
+    </table>
+
+    <h2>4. Rent</h2>
+    <table class="grid">
+        <tr>
+            <td class="label">Rent per week</td>
+            <td class="value">AUD $<apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!Opportunity.Weekly_Rent__c}" /></apex:outputText></td>
+        </tr>
+        <tr><td class="label">Payable</td><td class="value">{!Opportunity.Rent_Payment_Frequency__c}, in advance</td></tr>
+        <tr>
+            <td class="label">Annual rent</td>
+            <td class="value">AUD $<apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!Opportunity.Annual_Rent__c}" /></apex:outputText></td>
+        </tr>
+    </table>
+
+    <h2>5. Rental bond</h2>
+    <div class="clause">
+        A rental bond is payable by the Tenant before taking possession and must be lodged with the relevant state or territory bond authority.
+    </div>
+    <table class="grid">
+        <tr>
+            <td class="label">Bond amount</td>
+            <td class="value">AUD $<apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!Opportunity.Bond_Amount__c}" /></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="label">Equivalent to</td>
+            <td class="value"><apex:outputText value="{0,number,0.0}"><apex:param value="{!Opportunity.Bond_Weeks__c}" /></apex:outputText> weeks of rent</td>
+        </tr>
+    </table>
+
+    <h2>6. Special conditions</h2>
+    <div class="conditions">{!Opportunity.Special_Conditions__c}</div>
+
+    <table class="sign">
+        <tr>
+            <td>
+                <div class="sigline">&#160;</div>
+                <div class="siglabel">Landlord / agent: {!Opportunity.Owner.Name} &#160; Date: ____ / ____ / ________</div>
+            </td>
+            <td>
+                <div class="sigline">&#160;</div>
+                <div class="siglabel">Tenant: {!Opportunity.Tenant_Name__c} &#160; Date: ____ / ____ / ________</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="disclaimer">
+        Demonstration document generated from Salesforce Opportunity {!Opportunity.Id}. This is not a legally binding
+        tenancy agreement. Each Australian state and territory prescribes its own residential tenancy agreement form and
+        bond rules; use the official form for your jurisdiction.
+    </div>
+
+</body>
+</html>
+</apex:page>

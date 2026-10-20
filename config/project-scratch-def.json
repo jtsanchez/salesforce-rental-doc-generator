@@ -1,0 +1,13 @@
+{
+  "orgName": "AU Rental Doc Generator Demo",
+  "edition": "Developer",
+  "country": "AU",
+  "language": "en_US",
+  "hasSampleData": false,
+  "features": [],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
+    }
+  }
+}

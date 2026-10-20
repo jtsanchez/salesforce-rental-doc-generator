@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Property_State__c</fullName>
+    <description>Australian state or territory where the property is located.</description>
+    <label>State / Territory</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>NSW</fullName><default>false</default><label>NSW</label></value>
+            <value><fullName>VIC</fullName><default>false</default><label>VIC</label></value>
+            <value><fullName>QLD</fullName><default>false</default><label>QLD</label></value>
+            <value><fullName>WA</fullName><default>false</default><label>WA</label></value>
+            <value><fullName>SA</fullName><default>false</default><label>SA</label></value>
+            <value><fullName>TAS</fullName><default>false</default><label>TAS</label></value>
+            <value><fullName>ACT</fullName><default>false</default><label>ACT</label></value>
+            <value><fullName>NT</fullName><default>false</default><label>NT</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

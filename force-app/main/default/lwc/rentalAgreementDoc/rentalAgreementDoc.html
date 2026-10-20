@@ -1,0 +1,340 @@
+<template>
+    <lightning-card icon-name="standard:contract">
+        <span slot="title">Tenancy agreement</span>
+
+        <div slot="actions" class="slds-grid slds-grid_vertical-align-center">
+            <template lwc:if={hasChanges}>
+                <span class="slds-badge slds-badge_inverse slds-m-right_small">{changeCount} unsaved</span>
+            </template>
+            <lightning-button
+                label="Discard"
+                class="slds-m-right_x-small"
+                onclick={handleDiscard}
+                disabled={discardDisabled}
+            ></lightning-button>
+            <lightning-button
+                variant="brand"
+                label="Save to Opportunity"
+                class="slds-m-right_x-small"
+                onclick={handleSave}
+                disabled={saveDisabled}
+            ></lightning-button>
+            <lightning-button
+                label="Generate PDF"
+                icon-name="utility:download"
+                onclick={handleGeneratePdf}
+                disabled={generateDisabled}
+            ></lightning-button>
+        </div>
+
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+
+            <template lwc:if={loadError}>
+                <div class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_small" role="alert">
+                    <span>{loadError}</span>
+                </div>
+            </template>
+
+            <template lwc:if={isReady}>
+
+                <template lwc:if={isLocked}>
+                    <div class="slds-notify slds-notify_alert slds-m-bottom_small" role="status">
+                        <lightning-icon icon-name="utility:lock" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                        <span>This Opportunity is closed, so the document is read-only.</span>
+                    </div>
+                </template>
+
+                <template lwc:if={remoteChanged}>
+                    <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-bottom_small" role="alert">
+                        <span class="slds-grow">
+                            The Opportunity was updated elsewhere. Your unsaved edits are kept; saving will overwrite those fields.
+                        </span>
+                        <lightning-button variant="base" label="Discard my edits" onclick={handleDiscard}></lightning-button>
+                    </div>
+                </template>
+
+                <template lwc:if={hasErrors}>
+                    <div class="slds-notify slds-notify_alert slds-alert_error slds-m-bottom_small" role="alert">
+                        <ul class="slds-list_dotted">
+                            <template for:each={errorItems} for:item="item">
+                                <li key={item.key}>{item.text}</li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+
+                <div class="sync-bar slds-m-bottom_small">
+                    <template lwc:if={syncNote}>
+                        <span class="slds-badge slds-theme_success">{syncNote}</span>
+                    </template>
+                    <span class="slds-text-color_weak slds-text-body_small">Live link to the Opportunity. Last synced {lastSynced}</span>
+                </div>
+
+                <article class="paper">
+                    <header class="paper-header">
+                        <div class="agency">{agencyName}</div>
+                        <h1 class="title">Residential Tenancy Agreement</h1>
+                        <div class="reference">Reference: {v.Name}</div>
+                    </header>
+
+                    <!-- 1. Parties -->
+                    <section class="section">
+                        <h2 class="section-title">1. Parties</h2>
+                        <p class="clause">
+                            The Landlord is <strong>{accountName}</strong>, represented by the managing agent <strong>{ownerName}</strong>. The Tenant is named below.
+                        </p>
+                        <div class="grid">
+                            <lightning-input
+                                label="Tenant name"
+                                value={v.Tenant_Name__c}
+                                data-field="Tenant_Name__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                type="email"
+                                label="Tenant email"
+                                value={v.Tenant_Email__c}
+                                data-field="Tenant_Email__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                type="tel"
+                                label="Tenant phone"
+                                value={v.Tenant_Phone__c}
+                                data-field="Tenant_Phone__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- 2. Premises -->
+                    <section class="section">
+                        <h2 class="section-title">2. The premises</h2>
+                        <p class="clause">{premisesClause}</p>
+                        <div class="grid">
+                            <lightning-input
+                                label="Street address"
+                                value={v.Property_Address__c}
+                                data-field="Property_Address__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                label="Suburb"
+                                value={v.Property_Suburb__c}
+                                data-field="Property_Suburb__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-combobox
+                                label="State / territory"
+                                value={v.Property_State__c}
+                                options={stateOptions}
+                                placeholder="Select"
+                                data-field="Property_State__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-combobox>
+                            <lightning-input
+                                label="Postcode"
+                                value={v.Property_Postcode__c}
+                                maxlength="4"
+                                data-field="Property_Postcode__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-combobox
+                                label="Property type"
+                                value={v.Property_Type__c}
+                                options={typeOptions}
+                                placeholder="Select"
+                                data-field="Property_Type__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-combobox>
+                            <lightning-input
+                                type="number"
+                                label="Bedrooms"
+                                value={v.Bedrooms__c}
+                                min="0"
+                                step="1"
+                                data-field="Bedrooms__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                type="number"
+                                label="Bathrooms"
+                                value={v.Bathrooms__c}
+                                min="0"
+                                step="1"
+                                data-field="Bathrooms__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- 3. Term -->
+                    <section class="section">
+                        <h2 class="section-title">3. Term</h2>
+                        <p class="clause">{termClause}</p>
+                        <div class="grid">
+                            <lightning-input
+                                type="date"
+                                label="Commencement date"
+                                value={v.Lease_Start_Date__c}
+                                data-field="Lease_Start_Date__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                type="number"
+                                label="Fixed term (months)"
+                                value={v.Lease_Term_Months__c}
+                                min="1"
+                                step="1"
+                                data-field="Lease_Term_Months__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                label="End date (calculated on save)"
+                                value={leaseEndDisplay}
+                                readonly
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- 4. Rent -->
+                    <section class="section">
+                        <h2 class="section-title">4. Rent</h2>
+                        <p class="clause">{rentClause}</p>
+                        <div class="grid">
+                            <lightning-input
+                                type="number"
+                                label="Rent per week (AUD)"
+                                value={v.Weekly_Rent__c}
+                                min="0"
+                                step="0.01"
+                                data-field="Weekly_Rent__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-combobox
+                                label="Payment frequency"
+                                value={v.Rent_Payment_Frequency__c}
+                                options={frequencyOptions}
+                                placeholder="Select"
+                                data-field="Rent_Payment_Frequency__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-combobox>
+                            <lightning-input
+                                label="Annual rent (calculated on save)"
+                                value={annualRentDisplay}
+                                readonly
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- 5. Bond -->
+                    <section class="section">
+                        <h2 class="section-title">5. Rental bond</h2>
+                        <p class="clause">{bondClause}</p>
+                        <div class="grid">
+                            <lightning-input
+                                type="number"
+                                label="Bond amount (AUD)"
+                                value={v.Bond_Amount__c}
+                                min="0"
+                                step="0.01"
+                                data-field="Bond_Amount__c"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                            <lightning-input
+                                label="Equivalent to (calculated on save)"
+                                value={bondWeeksDisplay}
+                                readonly
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- 6. Conditions -->
+                    <section class="section">
+                        <h2 class="section-title">6. Pets and special conditions</h2>
+                        <p class="clause">{petsClause}</p>
+                        <lightning-input
+                            type="checkbox"
+                            label="Pets permitted (with consent)"
+                            checked={v.Pets_Allowed__c}
+                            data-field="Pets_Allowed__c"
+                            onchange={handleChange}
+                            disabled={isLocked}
+                        ></lightning-input>
+                        <lightning-textarea
+                            label="Special conditions"
+                            value={v.Special_Conditions__c}
+                            max-length="2000"
+                            data-field="Special_Conditions__c"
+                            onchange={handleChange}
+                            disabled={isLocked}
+                        ></lightning-textarea>
+                    </section>
+
+                    <!-- 7. Pipeline -->
+                    <section class="section">
+                        <h2 class="section-title">7. Status</h2>
+                        <p class="clause">
+                            Moving the stage to Closed Won marks the property as leased and locks this document.
+                            A tenant name and commencement date are required first.
+                        </p>
+                        <div class="grid">
+                            <lightning-combobox
+                                label="Stage"
+                                value={v.StageName}
+                                options={stageOptions}
+                                data-field="StageName"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-combobox>
+                            <lightning-input
+                                type="date"
+                                label="Expected sign date"
+                                value={v.CloseDate}
+                                data-field="CloseDate"
+                                onchange={handleChange}
+                                disabled={isLocked}
+                            ></lightning-input>
+                        </div>
+                    </section>
+
+                    <!-- Execution -->
+                    <section class="signatures">
+                        <div class="signature">
+                            <div class="signature-line"></div>
+                            <div class="signature-label">Landlord / agent: {ownerName}</div>
+                        </div>
+                        <div class="signature">
+                            <div class="signature-line"></div>
+                            <div class="signature-label">Tenant: {v.Tenant_Name__c}</div>
+                        </div>
+                    </section>
+
+                    <footer class="disclaimer">
+                        Demonstration document, not a legally binding tenancy agreement. Each Australian state and
+                        territory prescribes its own residential tenancy agreement form and bond rules.
+                    </footer>
+                </article>
+            </template>
+
+            <template lwc:else>
+                <lightning-spinner alternative-text="Loading agreement" size="small"></lightning-spinner>
+            </template>
+        </div>
+    </lightning-card>
+</template>

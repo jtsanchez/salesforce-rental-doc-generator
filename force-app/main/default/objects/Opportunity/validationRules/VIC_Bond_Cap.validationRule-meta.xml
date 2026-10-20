@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VIC_Bond_Cap</fullName>
+    <active>true</active>
+    <description>Demo rule: VIC bond cap of one month's rent (weekly rent x 52 / 12) when weekly rent is $900 or less. Illustrative only.</description>
+    <errorConditionFormula>AND(
+    ISPICKVAL( Property_State__c, &quot;VIC&quot; ),
+    NOT( ISBLANK( Weekly_Rent__c ) ),
+    NOT( ISBLANK( Bond_Amount__c ) ),
+    Weekly_Rent__c &lt;= 900,
+    Bond_Amount__c &gt; Weekly_Rent__c * 52 / 12
+)</errorConditionFormula>
+    <errorDisplayField>Bond_Amount__c</errorDisplayField>
+    <errorMessage>For VIC properties with rent of $900 per week or less, the bond cannot exceed one month's rent (demo rule).</errorMessage>
+</ValidationRule>

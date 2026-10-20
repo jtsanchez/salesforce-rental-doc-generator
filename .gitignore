@@ -1,0 +1,6 @@
+.sfdx/
+.sf/
+node_modules/
+*.log
+.vscode/
+.idea/
